@@ -1,3 +1,12 @@
+2002-05-21  Dave Brolley  <brolley@redhat.com>
+
+	* decode.scm (-opcode-slots): Don't consider bits beyond the length of
+	the insn.
+
+2002-05-17  Johan Rydberg  <jrydberg@rtmk.org>
+
+	* cpu/powerpc.cpu: New file.
+
 2002-05-01  Graydon Hoare  <graydon@redhat.com>
 
 	* desc-cpu.scm (@arch@_cgen_cpu_close): Fix memory leaks.
@@ -56,7 +65,7 @@
 
 	* cpu/xstormy16.cpu (gr-Rbj-names): Rename this ...
 	(gr-Rb-names): ... to this.
-	(h-Rb): New hardware peice.
+	(h-Rb): New hardware piece.
 	(h-Rbj): Use gr-Rb-names.
 	(Rb): Use h-Rb.
 	(holdx): New instruction.
