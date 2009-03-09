@@ -10,7 +10,7 @@
 #define CGEN_DIS_HASH_SIZE 1
 
 #undef  CGEN_DIS_HASH
-#define CGEN_DIS_HASH(buffer, insn) 0
+#define CGEN_DIS_HASH(buffer, insn, big_p) 0
 
 #define CGEN_VERBOSE_ASSEMBLER_ERRORS
 
