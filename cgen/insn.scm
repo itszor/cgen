@@ -967,7 +967,11 @@
       (elm-get insn '/insn-value)
       (let* ((base-len (insn-base-mask-length insn))
 	     (value (apply +
-			   (map (lambda (fld) (ifld-value fld base-len (ifld-get-value fld)))
+			   (map (lambda (fld)
+					(if (ifld-beyond-base? fld)
+					    (error "IFLD beyond base")
+					    (ifld-value fld base-len
+							(ifld-get-value fld))))
 				(find ifld-constant?
 				      (ifields-base-ifields (insn-iflds insn))))
 			   )))
@@ -993,6 +997,15 @@
 	(elm-set! insn '/insn-base-value base-value)
 	base-value))
 )
+
+(define (insn-word-value insn wordnum wordsize)
+  (let* ((base-len (insn-base-mask-length insn))
+	 (iflds (ifields-base-ifields (insn-iflds insn)))
+	 (flds-in-word (const-iflds-for-word iflds wordnum wordsize)))
+        (apply + (map (lambda (f) (ifld-value f base-len (ifld-get-value f)))
+		      flds-in-word)))
+)
+
 
 ; Insn operand utilities.
 

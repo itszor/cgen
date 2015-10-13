@@ -319,15 +319,37 @@
   (string-append "& " (gen-sym (insn-ifmt insn)))
 )
 
+(define (ifmt-opcodes-beyond-base? iflds)
+  (find-first ifld-beyond-base? (ifields-base-ifields iflds))
+)
+
+;; Find the constant fields in insn words after the first.  FIXME: stops when
+;; it hits zero: there's no particular reason to believe this is correct in
+;; general.
+
+(define (subsequent-words insn wordnum wordsize)
+  (let ((wordval (insn-word-value insn wordnum wordsize)))
+       (if (> wordval 0)
+	   (cons wordval (subsequent-words insn (+ wordnum 1) wordsize))
+	   '()))
+)
+
 ; Return the definition of an instruction value entry.
 
 (define (gen-ivalue-entry insn)
   (string-list "{ "
-	       "0x" (number->string (insn-value insn) 16)
-	       (if #f ; (ifmt-opcodes-beyond-base? (insn-ifmt insn))
-		   (string-list ", { "
-				; ??? wip: opcode values beyond the base insn
-				"0 }")
+	       "0x" (number->string (insn-base-value insn) 16)
+	       (if (ifmt-opcodes-beyond-base? (insn-iflds insn))
+		   (let ((s-words (subsequent-words insn 1
+						    (state-base-insn-bitsize))))
+			(string-list ", { "
+			  (string-join
+			    (map (lambda (x)
+					 (string-append "0x"
+					   (number->string x 16)))
+				 s-words)
+			     ", ")
+			  " }"))
 		   "")
 	       " }")
 )
@@ -348,7 +370,7 @@
     ",\n"
     ; ??? 'twould save space to put a pointer here and record format separately
     "    " (gen-ifmt-entry insn) ", "
-    ;"0x" (number->string (insn-value insn) 16) ",\n"
+    ;"0x" (number->string (insn-base-value insn) 16) ",\n"
     (gen-ivalue-entry insn) "\n"
     "  },\n"))
 )

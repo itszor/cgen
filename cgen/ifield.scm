@@ -1165,6 +1165,15 @@ Define an instruction multi-field, all arguments specified.
   (> (ifld-word-offset f) 0)
 )
 
+(define (const-iflds-for-word flds wordnum wordsize)
+  (filter (lambda (fld) (let ((offs (ifld-word-offset fld))
+			      (start (ifld-start fld)))
+			     (and (ifld-constant? fld)
+				  (= (floor (/ (+ offs start) wordsize))
+				     wordnum))))
+	  flds)
+)
+
 ; Return <hardware> object to use to hold value of <ifield> F.
 ; i.e. one of h-uint, h-sint.
 ; NB: Should be defined in terms of `hardware-for-mode'.

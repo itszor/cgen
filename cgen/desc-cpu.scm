@@ -320,6 +320,8 @@ const CGEN_HW_ENTRY @arch@_cgen_hw_table[] =
    (number->string (bits->bytes
 		    (apply max (map isa-max-insn-bitsize (current-isa-list)))))
    "\n\n"
+   "#define CGEN_MAX_EXTRA_OPCODE_OPERANDS 4\n"
+   "\n\n"
    ; This tells the assembler/disassembler whether or not it can use an int to
    ; record insns, which is faster.  Since this controls the typedef of the
    ; insn buffer, only enable this if all isas support it.
