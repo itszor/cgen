@@ -327,10 +327,11 @@
 ;; it hits zero: there's no particular reason to believe this is correct in
 ;; general.
 
-(define (subsequent-words insn wordnum wordsize)
+(define (subsequent-words insn wordnum wordsize opc-words)
   (let ((wordval (insn-word-value insn wordnum wordsize)))
-       (if (> wordval 0)
-	   (cons wordval (subsequent-words insn (+ wordnum 1) wordsize))
+       (if (> opc-words 0)
+	   (cons wordval (subsequent-words insn (1+ wordnum) wordsize
+					   (1- opc-words)))
 	   '()))
 )
 
@@ -339,18 +340,22 @@
 (define (gen-ivalue-entry insn)
   (string-list "{ "
 	       "0x" (number->string (insn-base-value insn) 16)
-	       (if (ifmt-opcodes-beyond-base? (insn-iflds insn))
-		   (let ((s-words (subsequent-words insn 1
-						    (state-base-insn-bitsize))))
-			(string-list ", { "
-			  (string-join
-			    (map (lambda (x)
-					 (string-append "0x"
-					   (number->string x 16)))
-				 s-words)
-			     ", ")
-			  " }"))
-		   "")
+	       (let ((iflds (insn-iflds insn)))
+	         (if (ifmt-opcodes-beyond-base? iflds)
+		     (let* ((wordsize (state-base-insn-bitsize))
+			    (s-words (subsequent-words insn 1
+						       wordsize
+						       (max-const-ifld-word
+							 iflds wordsize))))
+		       (string-list ", { "
+			 (string-join
+			   (map (lambda (x)
+					(string-append "0x"
+					  (number->string x 16)))
+				s-words)
+			   ", ")
+			 " }"))
+		     ""))
 	       " }")
 )
 

@@ -1167,6 +1167,16 @@
 					  (non-multi-insns (current-insn-list))))))
 )
 
+(define (isa-max-insn-opcode-word isa)
+  (let ((wordsize (state-base-insn-bitsize)))
+       (apply max (cons 0
+			(map (lambda (insn)
+			       (max-const-ifld-word
+				 (ifields-base-ifields (insn-iflds insn))
+				 wordsize))
+			     (non-multi-insns (current-insn-list))))))
+)
+
 ;; Return a boolean indicating if instructions in ISA can be kept in a
 ;; portable int.
 

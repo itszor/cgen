@@ -1165,6 +1165,19 @@ Define an instruction multi-field, all arguments specified.
   (> (ifld-word-offset f) 0)
 )
 
+(define (max-const-ifld-word flds wordsize)
+  (foldl (lambda (highest fld)
+	   (let* ((offs (ifld-word-offset fld))
+		  (start (ifld-start fld))
+		  (fldword (floor (/ (+ offs start) wordsize))))
+		(if (and (ifld-constant? fld)
+			 (> fldword highest))
+		    fldword
+		    highest)))
+	 0
+	 flds)
+)
+
 (define (const-iflds-for-word flds wordnum wordsize)
   (filter (lambda (fld) (let ((offs (ifld-word-offset fld))
 			      (start (ifld-start fld)))
