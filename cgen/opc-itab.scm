@@ -323,6 +323,11 @@
   (find-first ifld-beyond-base? (ifields-base-ifields iflds))
 )
 
+(define (ifmt-cst-opcodes-beyond-base? iflds)
+  (find-first (lambda (fld) (and (ifld-beyond-base? fld) (ifld-constant? fld)))
+	      (ifields-base-ifields iflds))
+)
+
 ;; Find the constant fields in insn words after the first.  FIXME: stops when
 ;; it hits zero: there's no particular reason to believe this is correct in
 ;; general.
@@ -341,7 +346,7 @@
   (string-list "{ "
 	       "0x" (number->string (insn-base-value insn) 16)
 	       (let ((iflds (insn-iflds insn)))
-	         (if (ifmt-opcodes-beyond-base? iflds)
+	         (if (ifmt-cst-opcodes-beyond-base? iflds)
 		     (let* ((wordsize (state-base-insn-bitsize))
 			    (s-words (subsequent-words insn 1
 						       wordsize
