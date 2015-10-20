@@ -345,7 +345,7 @@
 (define (gen-ivalue-entry insn)
   (string-list "{ "
 	       "0x" (number->string (insn-base-value insn) 16)
-	       (let ((iflds (insn-iflds insn)))
+	       (let ((iflds (ifields-simple-ifields (insn-iflds insn))))
 	         (if (ifmt-cst-opcodes-beyond-base? iflds)
 		     (let* ((wordsize (state-base-insn-bitsize))
 			    (s-words (subsequent-words insn 1

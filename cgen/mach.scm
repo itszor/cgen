@@ -1172,7 +1172,7 @@
        (apply max (cons 0
 			(map (lambda (insn)
 			       (max-const-ifld-word
-				 (ifields-base-ifields (insn-iflds insn))
+				 (ifields-simple-ifields (insn-iflds insn))
 				 wordsize))
 			     (non-multi-insns (current-insn-list))))))
 )
