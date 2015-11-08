@@ -328,9 +328,7 @@
 	      (ifields-base-ifields iflds))
 )
 
-;; Find the constant fields in insn words after the first.  FIXME: stops when
-;; it hits zero: there's no particular reason to believe this is correct in
-;; general.
+;; Find the constant fields in insn words after the first (numbering OPC-WORDS).
 
 (define (subsequent-words insn wordnum wordsize opc-words)
   (let ((wordval (insn-word-value insn wordnum wordsize)))
@@ -338,6 +336,16 @@
 	   (cons wordval (subsequent-words insn (1+ wordnum) wordsize
 					   (1- opc-words)))
 	   '()))
+)
+
+;; Find the masks corresponding to the above for instruction decoding.
+
+(define (subsequent-masks insn wordnum wordsize opc-words)
+  (let ((maskval (insn-mask-value insn wordnum wordsize)))
+       (if (> opc-words 0)
+       (cons maskval (subsequent-masks insn (1+ wordnum) wordsize
+				       (1- opc-words)))
+       '()))
 )
 
 ; Return the definition of an instruction value entry.
@@ -348,16 +356,24 @@
 	       (let ((iflds (ifields-simple-ifields (insn-iflds insn))))
 	         (if (ifmt-cst-opcodes-beyond-base? iflds)
 		     (let* ((wordsize (state-base-insn-bitsize))
-			    (s-words (subsequent-words insn 1
-						       wordsize
-						       (max-const-ifld-word
-							 iflds wordsize))))
+			    (max-cst-ifld (max-const-ifld-word iflds wordsize))
+			    (s-words (subsequent-words insn 1 wordsize
+						       max-cst-ifld))
+			    (s-masks (subsequent-masks insn 1 wordsize
+						       max-cst-ifld)))
 		       (string-list ", { "
 			 (string-join
 			   (map (lambda (x)
 					(string-append "0x"
 					  (number->string x 16)))
 				s-words)
+			   ", ")
+			 " }, { "
+			 (string-join
+			   (map (lambda (x)
+					(string-append "0x"
+					  (number->string x 16)))
+				s-masks)
 			   ", ")
 			 " }"))
 		     ""))

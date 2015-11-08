@@ -1006,6 +1006,21 @@
 		      flds-in-word)))
 )
 
+(define (insn-mask-value insn wordnum wordsize)
+  (let* ((base-len (insn-base-mask-length insn))
+	 (iflds (ifields-base-ifields (insn-iflds insn)))
+	 (flds-in-word (const-iflds-for-word iflds wordnum wordsize))
+	 (lsb0? (ifld-lsb0? (car iflds)))
+	 (container (make <bitrange>
+			  (* wordnum wordsize) ; word-offset
+			  (if lsb0? (- base-len 1) 0) ; start
+			  base-len ; length
+			  base-len ; word-length
+			  lsb0?)))
+	(apply + (map (lambda (f) (ifld-mask f base-len container))
+		      flds-in-word)))
+)
+
 
 ; Insn operand utilities.
 
