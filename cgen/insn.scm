@@ -1001,8 +1001,20 @@
 (define (insn-word-value insn wordnum wordsize)
   (let* ((base-len (insn-base-mask-length insn))
 	 (iflds (ifields-base-ifields (insn-iflds insn)))
-	 (flds-in-word (const-iflds-for-word iflds wordnum wordsize)))
-        (apply + (map (lambda (f) (ifld-value f base-len (ifld-get-value f)))
+	 (flds-in-word (const-iflds-for-word iflds wordnum wordsize))
+	 (word-start (* wordnum wordsize))
+	 (lsb0? (ifld-lsb0? (car iflds))))
+        (apply + (map (lambda (fld)
+			(let ((value (ifld-value fld base-len
+						 (ifld-get-value fld)))
+			      (start (- word-start (ifld-word-offset fld))))
+			     (word-extract
+			       start
+			       base-len
+			       (ifld-word-length fld)
+			       lsb0?
+			       #t
+			       value)))
 		      flds-in-word)))
 )
 
@@ -1010,14 +1022,24 @@
   (let* ((base-len (insn-base-mask-length insn))
 	 (iflds (ifields-base-ifields (insn-iflds insn)))
 	 (flds-in-word (const-iflds-for-word iflds wordnum wordsize))
-	 (lsb0? (ifld-lsb0? (car iflds)))
-	 (container (make <bitrange>
-			  (* wordnum wordsize) ; word-offset
-			  (if lsb0? (- base-len 1) 0) ; start
-			  base-len ; length
-			  base-len ; word-length
-			  lsb0?)))
-	(apply + (map (lambda (f) (ifld-mask f base-len container))
+	 (word-start (* wordnum wordsize))
+	 (lsb0? (ifld-lsb0? (car iflds))))
+	(apply + (map (lambda (fld)
+			(let* ((start (- word-start (ifld-word-offset fld)))
+			       (container (make <bitrange>
+				 (ifld-word-offset fld) ; word-offset
+				 (if lsb0? (- base-len 1) 0) ; start
+				 (ifld-word-length fld) ; length
+				 (ifld-word-length fld) ; word-length
+				 lsb0?))
+			       (mask (ifld-mask fld base-len container)))
+			      (word-extract
+				start
+				base-len
+				(ifld-word-length fld)
+				lsb0?
+				#t
+				mask)))
 		      flds-in-word)))
 )
 
