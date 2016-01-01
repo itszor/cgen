@@ -989,7 +989,7 @@
 	      (find (lambda (f)
 		      (and (ifld-constant? f)
 			   (not (ifld-beyond-base? f))))
-		    (ifields-base-ifields (insn-iflds insn))))
+		    (ifields-simple-ifields (insn-iflds insn))))
 	     (base-value (apply +
 				(map (lambda (f)
 				       (ifld-value f base-len (ifld-get-value f)))
