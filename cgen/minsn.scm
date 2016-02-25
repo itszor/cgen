@@ -231,9 +231,11 @@
 		   (obj:comment minsn)
 		   (obj-atlist minsn)
 		   (minsn-syntax minsn)
-		   (/minsn-compute-iflds (context-append context
-							 (string-append ": " (obj:str-name minsn)))
-					 (cddr expn) alias-of)
+		   (ifields-constify-multi-ifields
+                     (/minsn-compute-iflds (context-append context
+					     (string-append ": "
+                                               (obj:str-name minsn)))
+					 (cddr expn) alias-of))
 		   #f ; ifield-assertion
 		   #f ; semantics
 		   #f ; timing

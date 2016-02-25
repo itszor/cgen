@@ -1127,6 +1127,81 @@ Define an instruction multi-field, all arguments specified.
 (define (ifields-simple-ifields ifld-list)
   (collect ifld-simple-ifields ifld-list)
 )
+
+(define (/eval-const rtx ht)
+  (cond
+    ((eq? (rtx-name rtx) 'and)
+     (let ((lhs (/eval-const (rtx-alu-op-arg rtx 0) ht))
+           (rhs (/eval-const (rtx-alu-op-arg rtx 1) ht)))
+       (logand lhs rhs)))
+
+     ((eq? (rtx-name rtx) 'srl)
+      (let ((lhs (/eval-const (rtx-alu-op-arg rtx 0) ht))
+            (rhs (/eval-const (rtx-alu-op-arg rtx 1) ht)))
+        (logslr lhs rhs)))
+
+     ((rtx-ifield? rtx)
+      (let* ((field-name (rtx-ifield-name rtx))
+             (val (hashv-ref ht field-name)))
+        (assert val)
+        val))
+
+     ((rtx-constant? rtx)
+      (rtx-constant-value rtx))
+
+     (else (context-error #f "While evaluating constant" "unsupported"
+                          rtx)))
+)
+
+(define (/process-set rtx ht)
+  (cond
+    ((eq? (rtx-name rtx) 'set)
+     (let ((lhs (rtx-set-dest rtx))
+           (rhs (rtx-set-src rtx)))
+       (assert (rtx-ifield? lhs))
+       (let ((name (rtx-ifield-name lhs))
+             (val (/eval-const rhs ht)))
+;        (logit 1 "ifield " name " evaluates to: " val "\n")
+         (hashv-set! ht name val))))
+
+    (else (logit 1 "not a set\n")))
+)
+
+(define (/process-seq rtx ht)
+  (cond
+    ((eq? (rtx-name rtx) 'sequence)
+     (begin
+       (for-each (lambda (expr) (/process-set expr ht))
+                 (rtx-sequence-exprs rtx))))
+
+    (else (logit 1 "not a sequence\n")))
+)
+
+(define (ifields-constify-multi-ifields ifld-list)
+  (foldr (lambda (ifld iflds-out)
+           (if (and (multi-ifield? ifld)
+                    (ifld-constant? ifld))
+               (let ((ifld-val-ht (make-hash-table))
+                     (multi-name (obj:name ifld))
+                     (multi-val (ifld-get-value ifld)))
+                 (hashv-set! ifld-val-ht multi-name multi-val)
+                 (let*
+                   ((ifld-canon (rtx-canonicalize #f 'DFLT #f nil
+                                (multi-ifld-insert ifld)))
+                    (ifld-splfy (rtx-simplify #f #f ifld-canon #f)))
+                   (/process-seq ifld-splfy ifld-val-ht)
+                   (foldr (lambda (ifld iflds-out)
+                            (let ((sub-val (hashv-ref ifld-val-ht
+                                                      (obj:name ifld))))
+                            (assert sub-val)
+                            (cons (ifld-new-value ifld sub-val) iflds-out)))
+                          iflds-out
+                          (multi-ifld-subfields ifld))))
+               (cons ifld iflds-out)))
+         '()
+         ifld-list)
+)
+
 
 ; Misc. utilities.
 

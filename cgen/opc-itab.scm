@@ -354,7 +354,7 @@
   (string-list "{ "
 	       "0x" (number->string (insn-base-value insn) 16)
 	       (let ((iflds (ifields-simple-ifields (insn-iflds insn))))
-	         (if (ifmt-cst-opcodes-beyond-base? iflds)
+                 (if (ifmt-cst-opcodes-beyond-base? iflds)
 		     (let* ((wordsize (state-base-insn-bitsize))
 			    (max-cst-ifld (max-const-ifld-word iflds wordsize))
 			    (s-words (subsequent-words insn 1 wordsize
