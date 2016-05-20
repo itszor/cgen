@@ -5,8 +5,8 @@
 # 3) a wrapper program successfully verifies MATCH/EXPECTED output
 
 # The names of tests to run, or ""/"all".
-test_list="$@"
-[ "$test_list" == "" ] && test_list=all
+test_list=$*
+[ "$test_list" = "" ] && test_list=all
 
 test="driver"
 source ./test-utils.sh
@@ -39,7 +39,7 @@ echo "Test summary:"
 echo "# failures: ${fail_count}"
 echo "# passes:   ${pass_count}"
 
-if [ ${fail_count} == 0 ]
+if [ ${fail_count} = 0 ]
 then
     exit 0
 else

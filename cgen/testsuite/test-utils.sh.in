@@ -1,7 +1,9 @@
+#!/bin/sh
+
 # Define various parameters for use in test runs.
 # Requires $test to be defined before sourcing.
 
-if [ "${test}" == "" ]
+if [ "${test}" = "" ]
 then
     echo "\$test not defined" >&2
     exit 1
@@ -17,7 +19,7 @@ srcdir=@srcdir@
 cgendir=${srcdir}/..
 
 GUILE=`if test -f ../../guile/libguile/guile ; then echo ../../guile/libguile/guile; else echo guile ; fi`
-GUILEFLAGS="-l ${cgendir}/guile.scm -s"
+GUILEFLAGS=("-l" "${cgendir}/guile.scm" "-s")
 
 CGENFLAGS=
 
@@ -37,12 +39,12 @@ exit_code=0
 
 run_cgen() {
     expect_fail=false
-    [ "$1" == "-f" ] && { expect_fail=true ; shift ; }
+    [ "$1" = "-f" ] && { expect_fail=true ; shift ; }
 
     [ $# -ne 1 ] && { echo "missing cpu_file" >&2 ; exit 1 ; }
     cpu_file=$1
 
-    if ${GUILE} ${GUILEFLAGS} ${cgendir}/cgen-testsuite.scm \
+    if ${GUILE} "${GUILEFLAGS[@]}" ${cgendir}/cgen-testsuite.scm \
 	-s ${cgendir} \
 	-b ${CGENFLAGS} \
 	-a ${cpu_file} \
