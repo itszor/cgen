@@ -325,7 +325,7 @@
 
 (define (ifmt-cst-opcodes-beyond-base? iflds)
   (find-first (lambda (fld) (and (ifld-beyond-base? fld) (ifld-constant? fld)))
-	      (ifields-base-ifields iflds))
+	      iflds)
 )
 
 ;; Find the constant fields in insn words after the first (numbering OPC-WORDS).
